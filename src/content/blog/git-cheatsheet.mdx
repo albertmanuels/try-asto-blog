@@ -1,0 +1,242 @@
+---
+title: 'Git Cheatsheet'
+description: 'My git cheatsheet'
+pubDate: '2024-12-14'
+heroImage: '/blog-placeholder-5.jpg'
+---
+
+## Git Branching Strategy
+
+Ada 3 strategy branching yang biasa digunakan di industri:
+
+1. Gitflow  Workflow
+    Strategi gitflow biasanya menerapkan menggunakan membagi branch berdasarkan tujuannya:
+
+    - main/master: branch utama yang digunakan untuk deploy ke server production
+    - develop/development: branch develop dijadikan acuan selama proses development berjalan. Semua feature branch akan dibuat dari branch ini dan juga semua branch feature-nya akan dimerge ke dalam branch ini
+    - staging: branch yang digunakan untuk deployment ke server staging
+    - feature: branch yang biasanya dibuat dari branch development. Branch ini digunakan oleh developer untuk mengerjakan suatu feature dan jika pengerjaannya sudah selesai maka nantinya akan dimerge kembali ke branch develop
+    - hotfixes: branch hotfixes biasanya dibuat langsung dari dari branch master/main untuk melakukan fixing bug yang terjadi di production. Branch ini akan langsung dimerge kembali ke master/main jika pengerjaan fix bug-nya sudah selesai dan juga harus dimerge ke branch develop agar code yang ada di branch develop tetap terjaga kestabilannya
+2. Trunk Based Development
+
+    TBD merupakan salah satu strategi workflow yang paling sederhana dan populer saat ini. TBD biasanya digunakan dalam proses pengembangan yang cepat, sudah terjamin kualitas code-nya (exp: UT), QA test, dsb. Branch yang digunakan biasanya yaitu:
+    
+    - main/master: branch utama yang digunakan untuk deploy ke server production
+    - feature: branch yang digunakan untuk mengembangkan feature
+    
+    TBD dianggap cepat karena developer hanya butuh membuat branch feature langsung dari main/master. Jika feature sudah selesai maka langsung bisa merge ke main/master dan deploy menggunakan versi rilis. 
+    
+    Pada stategi TBH adalah hal yang biasa jika melakukan deployment berkali-kali dalam waktu dekat atau dalam sehari
+    
+3. Forking Workflow
+    
+    Forking workflow biasanya digunakan pada project open source dan untuk keperluan contribution pada project tersebut
+    
+
+## Git Command
+
+remove/revert commit **before** pushed to remote
+
+```bash
+git reset HEAD~1
+```
+
+remove git from project
+
+```bash
+rm -rf .git*
+```
+
+remove/revert commit **after** pushed to remote
+
+```bash
+git revert commit_target_hash
+
+// mengembalikan changes pada suatu commit ke kondisi sebelumnya dan membuat commit baru
+// cara ini alternatif yang lebih aman daripada **git reset**, karena revert 
+	tidak akan menghilangkan atau mereset commit yang berada setelah commit_target yang di-revert
+```
+
+HEAD: pointer menuju hash terakhir
+
+```bash
+git diff hash1 has2
+```
+
+```bash
+git reset <mode> commit_hash
+
+//mode:
+--soft: memindahkan pointer HEAD namun tidak mengubah staged index dan working directory
+--mixed: memindahkan pointer HEAD dan mengubah staged index namun tidak mengubah working directory
+---hard: memindahkan pointer HEAD dan megubah staged index dan juga mengubah working directory
+```
+
+```bash
+// Menghapus semua commit yang ada setelah commit_hash_tujuan dan 
+mengubah posisi HEAD menjadi berada di commit_hash_tujuan di dalam repository
+
+// Dapat digunakan jika ingin menghapus commit yang sudah terlanjut dipush 
+ke repository dan mengembalikan posisi HEAD-nya 
+ke commit sebelumnya (commit_hash_tujuan)
+
+git reset commit_hash_tujuan --hard
+git push 
+```
+
+```bash
+git commit --amend -m "New Commit Message"
+
+//melakukan merge dengan changes pada commit terakhir sebelumnya 
+	dan menimpa commit message yang lama dengan yang baru
+
+//cara ini alternative dari git reset --soft
+```
+
+```bash
+
+git config alias.yourAliasCommand commandTarget
+git config alias.yourAliasCommand "commandTarget more than 1 word"
+
+// Digunakan untuk membuat sebuah alias dari suatu git command
+	
+contoh penggunaan:
+alias: git config alias.ko commit
+penggunaan: git ko -m "your commit message"
+
+alias: git config alias.logone "log --oneline"
+penggunaan: git logone
+
+// membuat alias dari command commit menjadi ko
+
+untuk membatalkan penggunaan alias:
+git config --unset alias.yourAliasCommand
+```
+
+```bash
+git branch -m "newBranchName"
+
+// untuk mengubah nama branch
+// harus dilakukan langsung di branch yang ingin diubah namanya
+```
+
+```bash
+git cherry-pick commit_hash
+
+// cherry-pick digunakan untuk mengambil changes dari suatu commit.
+	Berbeda dengan git merge yang mengambil seluruh changes yang ada pada suatu branch, 
+	cherry-pick hanya mengambil changes yang ada pada suatu commit_hash
+```
+
+```bash
+git tag tagName commit_hash_target
+
+// Biasanya digunakan untuk memberi tag version untuk keperluan rilis
+// tagName akan refer ke commit_hash yang menjadi targetnya
+// tagName dapat digunakan untuk checkout ke commit_hash yang menjadi targetnya
+
+tagName tidak dapat di-edit, maka jika ingin mengubah tagName-nya bisa dengan 
+menambahkan tagName baru ke commit_hash yang sama, lalu menghapus tagName yang 
+ingin diubah
+
+delete:
+git tag -d tagName // menghapus tag di local branch
+git push --delete <remote> tagName // menghapus tag di remote 
+
+check list:
+git tag --list
+
+mengirim tag:
+git push <remote> <tagName> // mengirim tag ke remote repo
+git push <remote> --tags // mengirim semua tag yang ada di local ke remote repo
+
+mengambil tag:
+git fetch <remote> <tagName> // mengambil tag dari remote repo ke local
+git fetch <remote> // mengambil semua tag yang ada di remote repo ke local
+
+```
+
+```bash
+git stash
+
+// digunakan untuk menyimpan changes sementara dan belum siap untuk 
+	dilakukan commit
+
+penggunaan:
+1. git add . atau git add namaFile
+2. git stash atau git stash push -m "stash message"
+
+untuk mengambil stash yang disimpan di stash list:
+git stash pop stashId // mengambil dan menghapus stashId-nya dari stash list
+git stash apply stashId // mengambil tetapi tidak menghapus stashId-nya dari stash list
+
+untuk menghapus stash yang disimpan dari stash list:
+git stash drop stashId // menghapus stash yang disimpan dari stash list berdasarkan stashId-nya
+git stash clear // menghapus seluruh stash yang ada di stash list
+
+```
+
+```bash
+git push origin // origin adalah nama remote repository-nya
+
+git push origin localBranch // mengirim changes dari localBranch ke remote branch
+git push origin localBranch:remoteBranch // mengirim changes dari localBranch ke remote branch yang nama branchnya berbeda dengan localBranch
+
+git push origin --all //untuk mengirimkan semua localBranch ke remote
+```
+
+```bash
+git push --delete <remote> <remoteBranch> // menghapus repository di remote
+
+contoh:
+git push --delete origin develop
+```
+
+```bash
+git clone <repository_ssh> newFolderName // clone repository tetapi dengan nama folder yang berbeda dari remote repository-nya
+```
+
+```bash
+git checkout -b <localBranch> <remoteBranch> // membuat branch baru di local dengan isi yang sama dengan di remote branch
+```
+
+```bash
+// Submodule adalah repository yang biasanya berisi library yang bisa digunakan di repository lainnya
+// Submodule biasanya digunakan untuk menyimpan library yang bisa digunakan di banyak repository
+// tidak disarankan mengubah isi submodule langsung dari repository yang menggunakannya.
+	 Jika ingin mengubah Submodule, disarankan langsung mengubahnya dari repository Submodule itu sendiri
+
+**Penggunaan dari Repository yang menggunakan Submodule**
+
+Menambahkan:
+git submodule add <urlGitSubmoduleRepo> <folderName> // menambahkan submodule ke dalam repository
+
+Secara otomatis akan dibuatkan file .gitmodules yang akan mendeteksi suatu folderName adalah submodule
+
+Mengupdate:
+git pull <remote> <remoteBranch>
+atau
+git submodule update --remote <folderNameSubmodule> // update salah satu folder dari submodule
+atau 
+git submodule update --remote // update seluruh folder dari submodule
+
+delete:
+Langsung menghapus folder submodule di Project Repo dan menghapus module-nya di .gitmodules
+
+Jika baru clone repository yang sudah memiliki submodule, 
+maka perlu menjalankan perintah berikut terlebih dahulu:
+
+git submodule init // untuk membaca dan mengaktifkan module yang terdapat di .gitmodules
+git submodule update --remote // untuk mendownload submodule repositorynya
+
+```
+
+Untuk mengecek apakah 2 branch yang ingin dimerge terdapat conflict:
+
+```bash
+git merge <compared_branch> --no-ff --no-commit
+
+lalu jika ingin mengembalikan ke kondisi semula:
+
+git merge --abort
+```
